@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Personal Chess Trainer</title>
+
+    <!-- cm-chessboard base + extensions CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.11.5/assets/chessboard.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.11.5/assets/extensions/markers/markers.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/cm-chessboard@8.11.5/assets/extensions/promotion-dialog/promotion-dialog.css"
+    />
+
+    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- chess.js (rules/move generation). Old but stable global build. -->
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
+    ></script>
+
+    <!-- Your app -->
+    <script type="module" defer src="./app.js"></script>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="title">
+        <h1>Personal Chess Trainer</h1>
+        <div class="sub">Plays ~50 Elo above you • Reviews your game • Saves locally</div>
+      </div>
+
+      <div class="ratings">
+        <div class="pill">
+          <div class="pill-label">You</div>
+          <div class="pill-value" id="userElo">—</div>
+        </div>
+        <div class="pill">
+          <div class="pill-label">Engine</div>
+          <div class="pill-value" id="engineElo">—</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="boardPanel">
+        <div class="boardWrap">
+          <div id="board" class="board"></div>
+
+          <!-- Eval bar (only shown in Analysis mode) -->
+          <div id="evalBar" class="evalBar" aria-label="Evaluation bar">
+            <div id="evalFill" class="evalFill"></div>
+            <div id="evalText" class="evalText">0.0</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="newGameBtn">New game</button>
+          <button id="resignBtn" class="danger" disabled>Resign</button>
+          <button id="analyzeBtn" disabled>Analyze</button>
+          <button id="savedTabBtn" class="secondary">Saved games</button>
+        </div>
+
+        <div class="status">
+          <div class="status-line" id="statusMain">Loading engine…</div>
+          <div class="status-line muted" id="statusSub"></div>
+        </div>
+      </section>
+
+      <section class="sidePanel">
+        <div class="tabs">
+          <button class="tabBtn active" data-tab="game">Game</button>
+          <button class="tabBtn" data-tab="analysis">Analysis</button>
+          <button class="tabBtn" data-tab="saved">Saved</button>
+        </div>
+
+        <div class="tab active" id="tab-game">
+          <div class="panelTitle">Moves</div>
+          <div id="moves" class="moves"></div>
+        </div>
+
+        <div class="tab" id="tab-analysis">
+          <div class="panelTitle">Review</div>
+          <div id="analysisSummary" class="summary"></div>
+
+          <div class="analysisTools">
+            <label class="checkbox">
+              <input type="checkbox" id="bestMoveToggle" />
+              <span>Show best move arrow</span>
+            </label>
+          </div>
+
+          <div class="reviewNav">
+            <button id="navStart" class="secondary">⏮</button>
+            <button id="navPrev" class="secondary">◀</button>
+            <div class="navLabel" id="navLabel">—</div>
+            <button id="navNext" class="secondary">▶</button>
+            <button id="navEnd" class="secondary">⏭</button>
+          </div>
+
+          <canvas id="evalGraph" width="560" height="140" class="graph"></canvas>
+
+          <div class="panelTitle">Move grades</div>
+          <div id="analysisMoves" class="analysisMoves"></div>
+          <div class="hint muted">
+            Tip: click any move to jump to that position on the board.
+          </div>
+        </div>
+
+        <div class="tab" id="tab-saved">
+          <div class="panelTitle">Saved games (local)</div>
+          <div class="savedActions">
+            <button id="exportPgnBtn" class="secondary">Export all PGNs</button>
+            <button id="clearSavedBtn" class="danger">Clear saved</button>
+          </div>
+          <div id="savedList" class="savedList"></div>
+          <div class="hint muted">
+            Saved games live in <code>localStorage</code> on this browser/device only.
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
