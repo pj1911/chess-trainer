@@ -1084,7 +1084,7 @@ async function runAnalysisAndRender({ autoSavePrompt = true } = {}) {
   ui.analysisSummary.innerHTML = `
     <div><strong>Accuracy</strong>: White ${aW}% • Black ${aB}%</div>
     <div class="muted" style="margin-top:6px">
-      Labels are heuristic (not identical to chess.com), based on engine eval loss + “only-move” gaps + sacrifice detection.
+      accuracy labels are heuristic, based on engine eval loss + “only-move” gaps + sacrifice detection.
     </div>
     <div class="muted" style="margin-top:6px">
       White: Brilliant ${counts.w.Brilliant}, Great ${counts.w.Great}, Best ${counts.w.Best}, Blunders ${counts.w.Blunder}
