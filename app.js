@@ -134,6 +134,10 @@ function clamp(n, lo, hi) {
   return Math.max(lo, Math.min(hi, n));
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function isTypingInInput() {
   const el = document.activeElement;
   if (!el) return false;
@@ -1259,6 +1263,8 @@ async function engineMoveIfNeeded() {
 
   isEngineThinking = true;
   setStatus("Engine thinking…", "");
+  await sleep(5000);
+
 
   try {
     const res = await engine.analyzePosition(chess.fen(), {
