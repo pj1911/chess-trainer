@@ -484,10 +484,13 @@ let review = {
   evalByFen: new Map()
 };
 
+
 let mode = "play";          // "play" | "analysis"
 let analysisChess = null;   // chess.js instance used in analysis sandbox
 let isAnalysisRunning = false;
 let playViewPly = 0; // 0..chess.history().length (which ply is shown while playing)
+
+let evalSeriesCache = []; // stores eval cp per position for the current analyzed game
 
 // ===== UI tabs =====
 function setTab(name) {
@@ -735,8 +738,7 @@ function classifyMove({ isBest, gapCp, cpl, sacrificed }) {
   return "Blunder";
 }
 
-// ===== Post-game analysis =====
-function drawEvalGraph(evalCpList) {
+function drawEvalGraph(evalCpList, cursorIndex = null) {
   const canvas = ui.evalGraph;
   const ctx = canvas.getContext("2d");
   const W = canvas.width;
@@ -744,11 +746,8 @@ function drawEvalGraph(evalCpList) {
 
   ctx.clearRect(0, 0, W, H);
 
-  // Background grid
-  ctx.globalAlpha = 1;
+  // Background center line (0 eval)
   ctx.lineWidth = 1;
-
-  // draw center line (0 eval)
   ctx.strokeStyle = "#2a344f";
   ctx.beginPath();
   ctx.moveTo(0, H / 2);
@@ -758,12 +757,16 @@ function drawEvalGraph(evalCpList) {
   // Clamp eval to +/- 800cp for visibility
   const clampCp = (cp) => clamp(cp, -800, 800);
 
-  const points = evalCpList.map((cp, i) => {
-    const x = (i / Math.max(1, evalCpList.length - 1)) * (W - 20) + 10;
-    const y = H / 2 - (clampCp(cp) / 800) * (H / 2 - 12);
-    return { x, y };
-  });
+  const n = evalCpList.length;
+  const xForIndex = (i) => (i / Math.max(1, n - 1)) * (W - 20) + 10;
+  const yForCp = (cp) => H / 2 - (clampCp(cp) / 800) * (H / 2 - 12);
 
+  const points = evalCpList.map((cp, i) => ({
+    x: xForIndex(i),
+    y: yForCp(cp)
+  }));
+
+  // Draw eval line
   ctx.strokeStyle = "#7aa2ff";
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -772,6 +775,32 @@ function drawEvalGraph(evalCpList) {
     else ctx.lineTo(p.x, p.y);
   });
   ctx.stroke();
+
+  // Draw vertical cursor (current real-game position in analysis)
+  if (cursorIndex != null && n > 0) {
+    const ci = clamp(cursorIndex, 0, n - 1);
+    const x = xForIndex(ci);
+
+    ctx.strokeStyle = "#e9ecf1";
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(x, 8);
+    ctx.lineTo(x, H - 8);
+    ctx.stroke();
+
+    // Small dot on the line at that position (optional, but nice)
+    const dot = points[ci];
+    if (dot) {
+      ctx.fillStyle = "#e9ecf1";
+      ctx.globalAlpha = 0.95;
+      ctx.beginPath();
+      ctx.arc(dot.x, dot.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+  }
 }
 
 function updateAnalysisNavLabel() {
@@ -817,6 +846,10 @@ function setReviewPly(plyIndex) {
   } else {
     clearLastMoveHighlight();
   }
+
+  if (evalSeriesCache && evalSeriesCache.length) {
+  drawEvalGraph(evalSeriesCache, review.currentPly);
+}
 }
 
 function clearBestMoveArrow() {
@@ -1018,7 +1051,8 @@ async function runAnalysisAndRender({ autoSavePrompt = true } = {}) {
   };
 
   const evalSeries = posEval.map((p) => p.evalWhiteCp ?? 0);
-  drawEvalGraph(evalSeries);
+  evalSeriesCache = evalSeries;
+  drawEvalGraph(evalSeriesCache, review.currentPly);
 
   for (let ply = 0; ply < historyVerbose.length; ply++) {
     const mv = historyVerbose[ply];
