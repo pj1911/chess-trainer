@@ -32,6 +32,9 @@ const DEFAULT_PROFILE = {
 
 const TARGET_ELO_OFFSET = 50;
 
+// Custom marker type for last-move highlighting (frame marker)
+const LAST_MOVE_MARKER = { class: "marker-frame-lastmove", slice: "markerFrame" };
+
 // Playing/search settings (kept simple)
 const PLAY_MOVE_TIME_MS = 350;   // engine thinking time per move
 const ANALYSIS_DEPTH = 14;       // post-game review depth
@@ -132,6 +135,29 @@ function updateElo(playerElo, oppElo, score, gamesPlayed) {
 
 function clamp(n, lo, hi) {
   return Math.max(lo, Math.min(hi, n));
+}
+
+function clearLastMoveHighlight() {
+  if (!board) return;
+
+  const { from, to } = lastMoveHighlight;
+
+  // remove by square to avoid affecting other marker types
+  if (from) board.removeMarkers(LAST_MOVE_MARKER, from);
+  if (to) board.removeMarkers(LAST_MOVE_MARKER, to);
+
+  lastMoveHighlight = { from: null, to: null };
+}
+
+function setLastMoveHighlight(from, to) {
+  if (!board) return;
+
+  clearLastMoveHighlight();
+
+  if (from) board.addMarker(LAST_MOVE_MARKER, from);
+  if (to) board.addMarker(LAST_MOVE_MARKER, to);
+
+  lastMoveHighlight = { from, to };
 }
 
 function sleep(ms) {
@@ -424,6 +450,7 @@ let profile = loadJSON(LS_PROFILE, DEFAULT_PROFILE);
 let engine = null;
 let board = null;
 let chess = null;
+let lastMoveHighlight = { from: null, to: null };
 
 let engineHuman = {
   targetAcc: 90,
@@ -774,6 +801,14 @@ function setReviewPly(plyIndex) {
   // update best move arrow + eval bar for the current analysis position
   refreshBestMoveArrow();
   scheduleEvalBarUpdate();
+
+  // highlight the move that led to this position (if available)
+  if (review.historyVerbose && review.currentPly > 0) {
+    const prev = review.historyVerbose[review.currentPly - 1];
+    if (prev) setLastMoveHighlight(prev.from, prev.to);
+  } else {
+    clearLastMoveHighlight();
+  }
 }
 
 function clearBestMoveArrow() {
@@ -946,6 +981,7 @@ async function runAnalysisAndRender({ autoSavePrompt = true } = {}) {
   setStatus("Analyzing game…", "This runs locally in your browser.");
 
   const historyVerbose = chess.history({ verbose: true }); // [{from,to,promotion?,san,color,...}, ...]
+  review.historyVerbose = historyVerbose;
   const fenList = [];
   const temp = new ChessCtor();
   fenList.push(temp.fen());
@@ -1280,6 +1316,7 @@ async function engineMoveIfNeeded() {
 
     board.setPosition(chess.fen());
     rebuildMovesUIFromHistory();
+    setLastMoveHighlight(moved.from, moved.to);
 
     playViewPly = chess.history().length; // <-- critical: after engine move
 
@@ -1373,6 +1410,7 @@ function setupBoard() {
     if (!mv) return false;
 
     syncBoardToGame(game);
+    setLastMoveHighlight(mv.from, mv.to);
 
     if (mode === "play") {
       rebuildMovesUIFromHistory();
@@ -1420,6 +1458,7 @@ async function startNewGame() {
 
   setupBoard();
   clearMovesUI();
+  clearLastMoveHighlight();
 
   ui.resignBtn.disabled = false;
   ui.analyzeBtn.disabled = true;
