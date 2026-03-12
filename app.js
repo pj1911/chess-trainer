@@ -727,9 +727,9 @@ function materialFromFen(fen) {
 
 function classifyMove({ isBest, gapCp, cpl, sacrificed }) {
   // chess.com-style labeling (simplified heuristics)
-  if (isBest && sacrificed && gapCp >= 120) return "Brilliant";
-  if (isBest && gapCp >= 200) return "Great";
-  if (isBest) return "Best";
+  if (isBest && sacrificed && gapCp >= 80) return "Brilliant";
+  if (isBest && gapCp >= 140) return "Great";
+  if (isBest && cpl <= 15) return "Best";
 
   if (cpl <= 20) return "Excellent";
   if (cpl <= 50) return "Good";
@@ -1163,15 +1163,19 @@ async function runAnalysisAndRender({ autoSavePrompt = true } = {}) {
   const aW = avg(accW);
   const aB = avg(accB);
 
+  const order = ["Brilliant","Great","Best","Excellent","Good","Inaccuracy","Mistake","Blunder"];
+  
+  const fmt = (c) =>
+    order.map(k => `${k} ${c[k]}`).join(" • ");
+
   ui.analysisSummary.innerHTML = `
     <div><strong>Accuracy</strong>: White ${aW}% • Black ${aB}%</div>
     <div class="muted" style="margin-top:6px">
-      accuracy labels are heuristic, based on engine eval loss + “only-move” gaps + sacrifice detection.
+      Labels are heuristic (not identical to chess.com), based on eval loss + gaps + sacrifice detection.
     </div>
-    <div class="muted" style="margin-top:6px">
-      White: Brilliant ${counts.w.Brilliant}, Great ${counts.w.Great}, Best ${counts.w.Best}, Blunders ${counts.w.Blunder}
-      <br/>
-      Black: Brilliant ${counts.b.Brilliant}, Great ${counts.b.Great}, Best ${counts.b.Best}, Blunders ${counts.b.Blunder}
+    <div class="muted" style="margin-top:6px; line-height: 1.5">
+      <div><strong>White</strong>: ${fmt(counts.w)}</div>
+      <div><strong>Black</strong>: ${fmt(counts.b)}</div>
     </div>
   `;
 
