@@ -494,9 +494,9 @@ button:disabled {
 
 /* Subtle last-move highlight */
 .marker-frame-lastmove {
-  stroke: rgba(255, 212, 59, 0.55); /* softer yellow */
+  stroke: rgba(46, 71, 68, 0.8);  /* softer yellow */
   stroke-width: 2.5px;             /* smaller frame */
   fill: none;
-  opacity: 0.55;                   /* less distracting */
+  opacity: 0.65;                   /* less distracting */
   pointer-events: none;
 }
