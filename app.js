@@ -138,6 +138,10 @@ function clamp(n, lo, hi) {
 }
 
 function clearLastMoveHighlight() {
+  if (lastMoveTimer) {
+    clearTimeout(lastMoveTimer);
+    lastMoveTimer = null;
+  }
   if (!board) return;
 
   const { from, to } = lastMoveHighlight;
@@ -158,6 +162,9 @@ function setLastMoveHighlight(from, to) {
   if (to) board.addMarker(LAST_MOVE_MARKER, to);
 
   lastMoveHighlight = { from, to };
+  lastMoveTimer = setTimeout(() => {
+    clearLastMoveHighlight();
+  }, 1500);
 }
 
 function sleep(ms) {
@@ -451,6 +458,7 @@ let engine = null;
 let board = null;
 let chess = null;
 let lastMoveHighlight = { from: null, to: null };
+let lastMoveTimer = null;
 
 let engineHuman = {
   targetAcc: 90,
