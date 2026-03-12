@@ -492,11 +492,11 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* Last move highlight (from + to squares) */
+/* Subtle last-move highlight */
 .marker-frame-lastmove {
-  stroke: var(--inaccuracy);
-  stroke-width: 6px;
+  stroke: rgba(255, 212, 59, 0.55); /* softer yellow */
+  stroke-width: 2.5px;             /* smaller frame */
   fill: none;
-  opacity: 0.9;
+  opacity: 0.55;                   /* less distracting */
   pointer-events: none;
 }
