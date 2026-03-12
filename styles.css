@@ -491,3 +491,12 @@ button:disabled {
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* Last move highlight (from + to squares) */
+.marker-frame-lastmove {
+  stroke: var(--inaccuracy);
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0.9;
+  pointer-events: none;
+}
