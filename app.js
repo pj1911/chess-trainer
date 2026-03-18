@@ -11,8 +11,8 @@ const ENGINE_WORKER_URL = "./engine/stockfish-18-lite-single.js";
 const ASSETS_URL = "https://cdn.jsdelivr.net/npm/cm-chessboard@8.11.5/assets/";
 
 // --- Human-ish engine selection ---
-const PLAY_SELECT_DEPTH = 8;     // lower than analysis; faster + more human
-const PLAY_SELECT_MULTIPV = 8;    // consider top 4 moves
+const PLAY_SELECT_DEPTH = 6;     // lower than analysis; faster + more human
+const PLAY_SELECT_MULTIPV = 10;    // consider top 4 moves
 
 // Keys in localStorage
 const LS_PROFILE = "pct.profile.v1";
@@ -30,7 +30,7 @@ const DEFAULT_PROFILE = {
   gamesPlayed: 0
 };
 
-const TARGET_ELO_OFFSET = 50;
+const TARGET_ELO_OFFSET = 20;
 
 // Custom marker type for last-move highlighting (frame marker)
 const LAST_MOVE_MARKER = { class: "marker-frame-lastmove", slice: "markerFrame" };
@@ -164,7 +164,7 @@ function setLastMoveHighlight(from, to) {
   lastMoveHighlight = { from, to };
   lastMoveTimer = setTimeout(() => {
     clearLastMoveHighlight();
-  }, 1500);
+  }, 1000);
 }
 
 function sleep(ms) {
@@ -1345,7 +1345,7 @@ async function engineMoveIfNeeded() {
 
   isEngineThinking = true;
   setStatus("Engine thinking…", "");
-  await sleep(5000);
+  await sleep(3000);
 
 
   try {
